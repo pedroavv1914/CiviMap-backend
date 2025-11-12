@@ -11,3 +11,20 @@ services:
     volumes:
       - ./sql:/docker-entrypoint-initdb.d
     restart: unless-stopped
+  api:
+    build: .
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://civimap:civimap@db:5432/civimap
+      - JWT_SECRET=changeme
+      - ALLOWED_ORIGINS=http://localhost:5173
+      - ADMIN_EMAIL=admin@civimap.local
+      - ADMIN_PASSWORD=admin123
+      - ADMIN_NAME=Admin
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./uploads:/app/uploads
+    restart: unless-stopped
