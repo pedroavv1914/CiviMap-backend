@@ -1,6 +1,7 @@
 import { db } from "../db.js";
 import crypto from "crypto";
 const memory = { issues: [] };
+const memoryHistory = { items: [] };
 async function list(filters) {
   if (db.available) {
     const parts = ["select id,title,description,status,category_id,created_by,address,neighborhood,city,priority_score,created_at,updated_at, ST_Y(location) as lat, ST_X(location) as lng from issues"];
@@ -101,6 +102,14 @@ async function updateStatus(id, status, userId) {
   if (idx === -1) return null;
   const cur = memory.issues[idx];
   memory.issues[idx] = { ...cur, status, updated_at: new Date().toISOString() };
+  memoryHistory.items.push({ id: crypto.randomUUID(), issue_id: id, old_status: cur.status, new_status: status, changed_by: userId, created_at: new Date().toISOString() });
   return memory.issues[idx];
 }
-export const issueRepository = { list, getById, create, updateStatus };
+async function statusHistory(issueId) {
+  if (db.available) {
+    const r = await db.pool.query("select id, issue_id, old_status, new_status, changed_by, created_at from issue_status_history where issue_id=$1 order by created_at desc", [issueId]);
+    return r.rows;
+  }
+  return memoryHistory.items.filter(h => h.issue_id === issueId).sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+}
+export const issueRepository = { list, getById, create, updateStatus, statusHistory };
