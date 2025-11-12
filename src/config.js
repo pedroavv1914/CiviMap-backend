@@ -6,5 +6,6 @@ export const config = {
   databaseUrl: process.env.DATABASE_URL || "",
   adminEmail: process.env.ADMIN_EMAIL || "",
   adminPassword: process.env.ADMIN_PASSWORD || "",
-  adminName: process.env.ADMIN_NAME || "Admin"
+  adminName: process.env.ADMIN_NAME || "Admin",
+  allowedOrigins: (process.env.ALLOWED_ORIGINS || "http://localhost:5173").split(",").map(s => s.trim()).filter(Boolean)
 };
