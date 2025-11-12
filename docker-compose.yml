@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      - POSTGRES_DB=civimap
+      - POSTGRES_USER=civimap
+      - POSTGRES_PASSWORD=civimap
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+    restart: unless-stopped

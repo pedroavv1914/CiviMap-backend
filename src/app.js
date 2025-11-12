@@ -1,0 +1,12 @@
+import express from "express";
+import cors from "cors";
+import { router } from "./routes/index.js";
+import path from "path";
+import { fileURLToPath } from "url";
+const app = express();
+app.use(cors());
+app.use(express.json());
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+app.use("/uploads", express.static(path.resolve(__dirname, "../uploads")));
+app.use("/api/v1", router);
+export { app };
