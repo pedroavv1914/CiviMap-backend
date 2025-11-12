@@ -2,6 +2,7 @@ import { Router } from "express";
 import { userService } from "../services/userService.js";
 import jwt from "jsonwebtoken";
 import { config } from "../config.js";
+import { requireAuth } from "../middlewares/auth.js";
 const authRouter = Router();
 authRouter.post("/signup", async (req, res) => {
   const { name, email, password } = req.body || {};
@@ -24,5 +25,10 @@ authRouter.post("/login", async (req, res) => {
   } catch {
     res.status(401).json({ error: "unauthorized" });
   }
+});
+authRouter.get("/me", requireAuth, async (req, res) => {
+  const u = await userService.findById(req.user.id);
+  if (!u) return res.status(404).json({ error: "not_found" });
+  res.json({ id: u.id, name: u.name, email: u.email, role: u.role });
 });
 export { authRouter };

@@ -14,4 +14,13 @@ async function authenticate(email, password) {
   if (!ok) throw new Error("bad_password");
   return user;
 }
-export const userService = { createUser, authenticate };
+async function findById(id) {
+  return userRepository.findById(id);
+}
+async function ensureAdminFromEnv(config) {
+  if (!config.adminEmail || !config.adminPassword) return;
+  const exists = await userRepository.findByEmail(config.adminEmail);
+  if (exists) return;
+  await createUser({ name: config.adminName || "Admin", email: config.adminEmail, password: config.adminPassword, role: "admin" });
+}
+export const userService = { createUser, authenticate, findById, ensureAdminFromEnv };

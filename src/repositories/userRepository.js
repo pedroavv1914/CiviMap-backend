@@ -8,6 +8,13 @@ async function findByEmail(email) {
   }
   return memory.users.find(u => u.email === email) || null;
 }
+async function findById(id) {
+  if (db.available) {
+    const r = await db.pool.query("select id, name, email, password_hash, role from users where id=$1", [id]);
+    return r.rows[0] || null;
+  }
+  return memory.users.find(u => u.id === id) || null;
+}
 async function create({ name, email, password_hash, role }) {
   if (db.available) {
     const id = crypto.randomUUID();
@@ -18,4 +25,4 @@ async function create({ name, email, password_hash, role }) {
   memory.users.push(u);
   return { id: u.id, name: u.name, email: u.email, role: u.role };
 }
-export const userRepository = { findByEmail, create };
+export const userRepository = { findByEmail, findById, create };
