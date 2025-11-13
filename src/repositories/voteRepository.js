@@ -29,6 +29,13 @@ async function count(issueId) {
   }
   return memory.votes.filter(v => v.issue_id === issueId).length;
 }
+async function has(issueId, userId) {
+  if (db.available) {
+    const r = await db.pool.query("select 1 from issue_votes where issue_id=$1 and user_id=$2 limit 1", [issueId, userId]);
+    return !!r.rows[0];
+  }
+  return memory.votes.some(v => v.issue_id === issueId && v.user_id === userId);
+}
 async function recalcPriority(issueId) {
   if (db.available) {
     const c = await count(issueId);
@@ -37,4 +44,4 @@ async function recalcPriority(issueId) {
   }
   return count(issueId);
 }
-export const voteRepository = { toggle, count, recalcPriority };
+export const voteRepository = { toggle, count, has, recalcPriority };
