@@ -11,4 +11,8 @@ const storage = multer.diskStorage({
     cb(null, base + ext);
   }
 });
-export const upload = multer({ storage });
+function fileFilter(req, file, cb) {
+  const ok = (file.mimetype || "").startsWith("image/");
+  cb(ok ? null : new Error("invalid_file"), ok);
+}
+export const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });

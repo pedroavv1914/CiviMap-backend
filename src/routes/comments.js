@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { requireAuth } from "../middlewares/auth.js";
 import { commentService } from "../services/commentService.js";
+import { validate } from "../utils/validate.js";
 const commentsRouter = Router();
 commentsRouter.get("/issues/:id/comments", async (req, res) => {
   const items = await commentService.list(req.params.id);
@@ -8,7 +9,7 @@ commentsRouter.get("/issues/:id/comments", async (req, res) => {
 });
 commentsRouter.post("/issues/:id/comments", requireAuth, async (req, res) => {
   const { content } = req.body || {};
-  if (!content) return res.status(400).json({ error: "invalid" });
+  if (!validate.str(content, 1, 1000)) return res.status(400).json({ error: "invalid" });
   const item = await commentService.create(req.params.id, req.user.id, content);
   res.status(201).json(item);
 });
