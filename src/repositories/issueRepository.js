@@ -34,6 +34,12 @@ async function list(filters) {
     values.push(limit, offset);
     const q = parts.join("");
     const r = await db.pool.query(q, values);
+    if (filters.with_count) {
+      const countParts = ["select count(*)::int as c from issues"];
+      if (where.length) countParts.push(" where " + where.join(" and "));
+      const cr = await db.pool.query(countParts.join("") , values.slice(0, values.length - 2));
+      return { items: r.rows, total: cr.rows[0]?.c || 0 };
+    }
     return r.rows;
   }
   let arr = memory.issues.slice();
@@ -63,7 +69,10 @@ async function list(filters) {
   if (filters.sort === "priority") arr.sort((a,b) => (b.priority_score||0) - (a.priority_score||0));
   else if (filters.sort === "date") arr.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
   else if (filters.sort === "distance" && lat !== undefined && lng !== undefined) arr.sort((a,b) => dist(lat,lng,a.lat,a.lng) - dist(lat,lng,b.lat,b.lng));
-  return arr.slice(offset, offset + limit);
+  const total = arr.length;
+  const items = arr.slice(offset, offset + limit);
+  if (filters.with_count) return { items, total };
+  return items;
 }
 async function getById(id) {
   if (db.available) {
